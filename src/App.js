@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, TextField } from '@mui/material'
+import { Button, TextField } from '@mui/material';
 import "./App.css";
 
 function App() {
@@ -14,29 +14,36 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       const locationData = await fetch(
-        `http://api.positionstack.com/v1/forward?access_key=08f97d8964e2fded21c60d6a7f6d1020&query=${zipcode}`
-      ).then(res=>res.json());
+        `http://api.positionstack.com/v1/forward?access_key=${process.env.REACT_APP_POSITIONKEY}&query=${isNaN(Number(zipcode)) || zipcode.length < 5 || zipcode.length > 5 ? "00000" : zipcode}`
+      ).then(res => res.json());
 
-      const latitude = locationData.data[0].latitude;
-      const longitude = locationData.data[0].longitude;
-      const locality = locationData.data[0].locality;
-      const region_code = locationData.data[0].region_code;
+      if (locationData.data[0]) {
+        const latitude = locationData.data[0].latitude;
+        const longitude = locationData.data[0].longitude;
+        const locality = locationData.data[0].locality;
+        const region_code = locationData.data[0].region_code;
 
-      setCity(locality);
-      setState(region_code);
+        setCity(locality);
+        setState(region_code);
 
-      const data = await fetch(
-        `https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&exclude=minutely,hourly&appid=a58a9369c927a13ca845be3369f9cc0d`
-      );
-      const fetchedWeather = await data.json();
+        const data = await fetch(
+          `https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&exclude=minutely,hourly&appid=${process.env.REACT_APP_OPENAPI}`
+        );
+        const fetchedWeather = await data.json();
 
-      const fixedDailyLength = {
-        ...fetchedWeather,
-        daily: fetchedWeather.daily.slice(0, 5),
-      };
-      setWeatherData(fixedDailyLength);
+        const fixedDailyLength = {
+          ...fetchedWeather,
+          daily: fetchedWeather.daily.slice(0, 5),
+        };
+        setWeatherData(fixedDailyLength);
+      }
+      else {
+        setCity('Zip code invalid');
+        setState('');
+      }
     };
     fetchData().then(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newRequest]);
 
   return loading ? (
@@ -44,10 +51,10 @@ function App() {
   ) : (
     <div className="App">
       <h1 style={{ textAlign: "center" }}>
-        {city} {state} 5 Day Forecast
+        {city} {state} {city !== "Zip code invalid" && "5 Day Forecast"}
       </h1>
-      <TextField value={zipcode} onChange={(e)=>setZipcode(e.target.value)} />
-      <div style={{ padding: '5px' }}><Button variant="contained" onClick={()=>setNewRequest(!newRequest)}>Submit</Button></div>
+      <TextField value={zipcode} onChange={(e) => setZipcode(e.target.value)} />
+      <div style={{ padding: '5px' }}><Button variant="contained" onClick={() => setNewRequest(!newRequest)}>Submit</Button></div>
       <div
         style={{
           display: "flex",
@@ -56,7 +63,7 @@ function App() {
           alignItems: "center",
         }}
       >
-        {weatherData.daily.map((day, dayIndex) => {
+        {weatherData.daily && weatherData.daily.map((day, dayIndex) => {
           let date = new Date(day.dt * 1000);
           let dayOfWeek = weekday[date.getDay()];
 
@@ -72,13 +79,13 @@ function App() {
                 dayIndex === 0
                   ? { backgroundColor: "#ccc", borderBottom: "1px solid #ccc", padding: "5px" }
                   : dayIndex === 4
-                  ? {
+                    ? {
                       borderTop: "1px solid #ccc",
                       borderBottom: "1px solid #ccc",
                       borderRight: "1px solid #ccc",
                       padding: "5px",
                     }
-                  : {
+                    : {
                       borderTop: "1px solid #ccc",
                       borderBottom: "1px solid #ccc",
                       padding: "5px",
