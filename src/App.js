@@ -14,17 +14,17 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       const locationData = await fetch(
-        `http://api.positionstack.com/v1/forward?access_key=${process.env.REACT_APP_POSITIONKEY}&query=${isNaN(Number(zipcode)) || zipcode.length < 5 || zipcode.length > 5 ? "00000" : zipcode}`
+        `https://app.zipcodebase.com/api/v1/search?apikey=${process.env.REACT_APP_ZIPCODE}&codes=${isNaN(Number(zipcode))  ? "" : zipcode}&country=us`
       ).then(res => res.json());
 
-      if (locationData.data[0]) {
-        const latitude = locationData.data[0].latitude;
-        const longitude = locationData.data[0].longitude;
-        const locality = locationData.data[0].locality;
-        const region_code = locationData.data[0].region_code;
+      if (locationData.results && locationData.results[zipcode]) {
+        const latitude = locationData.results[zipcode][0].latitude;
+        const longitude = locationData.results[zipcode][0].longitude;
+        const rCity = locationData.results[zipcode][0].city;
+        const rState = locationData.results[zipcode][0].state;
 
-        setCity(locality);
-        setState(region_code);
+        setCity(rCity);
+        setState(rState);
 
         const data = await fetch(
           `https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&exclude=minutely,hourly&appid=${process.env.REACT_APP_OPENAPI}`
@@ -51,8 +51,9 @@ function App() {
   ) : (
     <div className="App">
       <h1 style={{ textAlign: "center" }}>
-        {city} {state} {city !== "Zip code invalid" && "5 Day Forecast"}
+        {city !== "Zip code invalid" && "5 Day Forecast"}
       </h1>
+      <h3>{city} {state}</h3>
       <TextField value={zipcode} onChange={(e) => setZipcode(e.target.value)} />
       <div style={{ padding: '5px' }}><Button variant="contained" onClick={() => setNewRequest(!newRequest)}>Submit</Button></div>
       <div
