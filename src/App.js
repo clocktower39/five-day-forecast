@@ -14,7 +14,7 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       const locationData = await fetch(
-        `https://app.zipcodebase.com/api/v1/search?apikey=${process.env.REACT_APP_ZIPCODE}&codes=${isNaN(Number(zipcode))  ? "" : zipcode}&country=us`
+        `https://app.zipcodebase.com/api/v1/search?apikey=${process.env.REACT_APP_ZIPCODE}&codes=${isNaN(Number(zipcode)) ? "" : zipcode}&country=us`
       ).then(res => res.json());
 
       if (locationData.results && locationData.results[zipcode]) {
@@ -56,14 +56,7 @@ function App() {
       <h3>{city} {state}</h3>
       <TextField value={zipcode} onChange={(e) => setZipcode(e.target.value)} />
       <div style={{ padding: '5px' }}><Button variant="contained" onClick={() => setNewRequest(!newRequest)}>Submit</Button></div>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
+      <div className="five-day-container" >
         {weatherData.daily && weatherData.daily.map((day, dayIndex) => {
           let date = new Date(day.dt * 1000);
           let dayOfWeek = weekday[date.getDay()];
@@ -76,32 +69,15 @@ function App() {
           return (
             <div
               key={dayIndex}
-              style={
-                dayIndex === 0
-                  ? { backgroundColor: "#ccc", borderBottom: "1px solid #ccc", padding: "5px" }
-                  : dayIndex === 4
-                    ? {
-                      borderTop: "1px solid #ccc",
-                      borderBottom: "1px solid #ccc",
-                      borderRight: "1px solid #ccc",
-                      padding: "5px",
-                    }
-                    : {
-                      borderTop: "1px solid #ccc",
-                      borderBottom: "1px solid #ccc",
-                      padding: "5px",
-                    }
-              }
+              className="day-container"
             >
               <h3>{dayOfWeek}</h3>
               <img
                 src={`http://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`}
                 alt={day.weather[0].descripton}
-                style={{ minHeight: "100px", minWidth: "100px" }}
+                className="weather-icon"
               />
-              <div
-                style={{ display: "flex", flexDirection: "row", justifyContent: "space-around" }}
-              >
+              <div className="temp-container" >
                 <h6>{highTemp}&deg;F</h6>
                 <h6>{lowTemp}&deg;F</h6>
               </div>
